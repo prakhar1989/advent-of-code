@@ -25,3 +25,22 @@
       (reduce +))))
 
 (get-total-lines)
+
+;; part two
+(defn get-ribbon [input]
+  (let [[l b h] (->> (str/split input #"x")
+                     (map #(Integer/parseInt %)))
+        peris [(+ l b) (+ l h) (+ b h)]]
+    (+  (* 2 (apply min peris)) (* l b h))))
+
+(assert (= (get-ribbon "2x3x4") 34))
+(assert (= (get-ribbon "1x1x10") 14))
+
+(defn get-total-ribbon []
+  (let [input (slurp (io/resource "day2-input.txt"))
+        lines (str/split input #"\n")]
+    (->> lines
+         (map get-ribbon)
+         (reduce +))))
+
+(get-total-ribbon)

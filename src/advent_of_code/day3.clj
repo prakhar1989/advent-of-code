@@ -16,7 +16,8 @@
          curr [0 0]
          dirs (map direction input)]
     (if (empty? dirs)
-      (count visited)
+      ;(count visited)
+      visited
       (recur
         (conj visited (move curr (first dirs)))
         (move curr (first dirs))
@@ -28,5 +29,18 @@
 (assert (= 4 (movein-grid "^>v<")))
 
 (def input (slurp (io/resource "day3-input.txt")))
-(movein-grid input)
+
+;; answer for part 1
+(count (movein-grid input))
+
+;; part 2
+(defn efficient-move [input]
+  (let [santa-moves (take-nth 2 input)
+        robo-moves (take-nth 2 (rest input))]
+    (count (clojure.set/union
+             (movein-grid robo-moves)
+             (movein-grid santa-moves)))))
+
+;; answer for part 2
+(efficient-move input)
 
