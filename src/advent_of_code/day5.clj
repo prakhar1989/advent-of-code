@@ -28,9 +28,24 @@
 (assert (not (is-nice-string? "haegwjzuvuyypxyu")))
 (assert (not (is-nice-string? "dvszwmarrgswjxmb")))
 
-(defn get-total-lines []
+
+(defn has-repeating-pairs? [s]
+  (not (nil? (re-find #"([a-z][a-z]).*\1" s))))
+
+(defn middle-letter? [s]
+  (not (nil? (re-find #"([a-z])[a-z]\1" s))))
+
+(defn is-nicer-string? [s]
+  (and (has-repeating-pairs? s)
+       (middle-letter? s)))
+
+(defn get-total-lines [pred]
   (let [input (slurp (io/resource "day5-input.txt"))
         lines (str/split input #"\n")]
-    (count (filter is-nice-string? lines))))
+    (count (filter pred lines))))
 
-(get-total-lines)
+;; part 1
+(get-total-lines is-nice-string?)
+
+;; part 2
+(get-total-lines is-nicer-string?)

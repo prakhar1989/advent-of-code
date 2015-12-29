@@ -48,4 +48,31 @@
         lines (str/split input #"\n")]
     (run lines)))
 
+;; part 1 answer
 (get-total-lights)
+
+;; part two
+(defn brighten [grid coord op]
+  (let [i (translate coord)
+        val (aget grid i)
+        new-val (cond
+                  (= op :on) (inc val)
+                  (= op :off) (max (dec val) 0)
+                  (= op :toggle) (+ 2 val))]
+    (aset-int grid i new-val)))
+
+(defn run-brighten [input]
+  (let [grid (int-array grid-size)]
+    (doseq [s input]
+      (let [{:keys [from to op]} (parse s)
+            coords (get-coords from to)]
+        (doseq [coord coords]
+          (brighten grid coord op))))
+    (reduce + grid)))
+
+(defn get-total-brightness []
+  (let [input (slurp (io/resource "day6-input.txt"))
+        lines (str/split input #"\n")]
+    (run-brighten lines)))
+
+(get-total-brightness)

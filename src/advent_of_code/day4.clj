@@ -12,16 +12,20 @@
         padding (apply str (repeat (- size (count sig)) "0"))]
     (str padding sig)))
 
-(defn do-mining [key]
-  (loop [i 0]
-    (let [hash (md5 (str key i))
-          zeros (take-while #(= % \0) hash)]
-      (if (<= 5 (count zeros)) i
-        (recur (inc i))))))
+(defn do-mining
+  ([key] (do-mining key 5))
+  ([key zero-count]
+    (loop [i 0]
+        (let [hash (md5 (str key i))
+              zeros (take-while #(= % \0) hash)]
+          (if (<= zero-count (count zeros)) i (recur (inc i)))))))
 
 ;; testcases
 (assert (= (do-mining "abcdef") 609043))
 (assert (= (do-mining "pqrstuv") 1048970))
 
+;; first part
 (do-mining "bgvyzdsv")
 
+;; second part
+(do-mining "bgvyzdsv" 6)
