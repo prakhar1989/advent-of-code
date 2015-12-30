@@ -1,4 +1,6 @@
-(ns advent-of-code.day7)
+(ns advent-of-code.day7
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]))
 
 (defn compute
   ([op x]
@@ -14,19 +16,16 @@
 (def RULE_PATTERNS
   {:set #"(\d+) -> (\w+)"
    :dual  #"(\w+) (AND|OR) (\w+) -> (\w+)"
+   :assign #"(\w+) -> (\w+)"
    :shift #"(\w+) (LSHIFT|RSHIFT) (\d+) -> (\w+)"
    :unary #"NOT (\w+) -> (\w+)"})
 
-; Returns rules of the form -
-;   {:op :AND, :left ["x" "y"] :right "z"}
-;   {:op :LSHIFT :left ["x" 2] :right "z"}
-;   {:op :NOT :left "x" :right "z"}
-;   {:op :SET :left 123 :right "x"}
 (defn parse [s]
   (let [const-rule (re-seq (:set   RULE_PATTERNS) s)
         dual-rule  (re-seq (:dual  RULE_PATTERNS) s)
         shift-rule (re-seq (:shift RULE_PATTERNS) s)
-        unary-rule (re-seq (:unary RULE_PATTERNS) s)]
+        unary-rule (re-seq (:unary RULE_PATTERNS) s)
+        assign-rule (re-seq (:assign RULE_PATTERNS) s)]
     (cond
       shift-rule
       (let [[[_ left op width right]] shift-rule]
@@ -47,8 +46,12 @@
         (let [[[_ left right]] unary-rule]
           {:op :NOT
            :left left
+           :right right})
+      assign-rule
+        (let [[[_ left right]] assign-rule]
+          {:op :SET
+           :left left
            :right right}))))
-
 
 (defn build-tree [rules]
   (loop [tree {}
@@ -73,17 +76,26 @@
 
 ;; testcases
 (def rules
-  ["123 -> x" "x OR y -> e" "x AND y -> d"
+  ["123 -> x" "x OR y -> e" "x AND y -> d" "y -> n"
    "456 -> y" "x LSHIFT 2 -> f" "y RSHIFT 2 -> g"
-   "NOT x -> h" "NOT y -> i"])
+   "NOT x -> h" "NOT y -> i" "x -> m"])
 
 (def tree (build-tree rules))
 
-(assert (= (evaluate tree "y") 456))
-(assert (= (evaluate tree "h") 65412))
-(assert (= (evaluate tree "i") 65079))
-(assert (= (evaluate tree "x") 123))
-(assert (= (evaluate tree "f") 492))
-(assert (= (evaluate tree "g") 114))
-(assert (= (evaluate tree "d") 72))
-(assert (= (evaluate tree "e") 507))
+(def testcases [["y" 456] ["h" 65412]
+                ["x" 123] ["i" 65079]
+                ["f" 492] ["g" 114]
+                ["e" 507] ["d" 72]
+                ["m" 123] ["n" 456]])
+
+(doseq [[node value] testcases]
+  (assert (= (evaluate tree node) value)))
+
+;; part 1
+(def rules (str/split (slurp (io/resource "day7-input.txt")) #"\n"))
+(def part1-tree (build-tree rules))
+
+(part1-tree "a")
+
+
+
