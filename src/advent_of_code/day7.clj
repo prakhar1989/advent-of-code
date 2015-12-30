@@ -62,16 +62,21 @@
           (assoc tree (:right rule) rule))
         (rest rules)))))
 
-(defn evaluate [tree node]
-  (if (not (tree node)) node
-    (let [{:keys [op left]} (tree node)]
-      (cond
-        (= op :SET) (evaluate tree left)
-        (= op :NOT) (compute :NOT (evaluate tree left))
-        (or (= op :LSHIFT) (= op :RSHIFT))
-          (compute op (evaluate tree (left 0)) (left 1))
-        (or (= op :AND) (= op :OR))
-          (compute op (evaluate tree (left 0)) (evaluate tree (left 1)))))))
+(def evaluate
+  (memoize
+    (fn [tree node]
+      (if (not (tree node))
+        (if (string? node) (Integer/parseInt node) node)
+        (let [{:keys [op left]} (tree node)]
+          (cond
+            (= op :SET) (evaluate tree left)
+            (= op :NOT) (compute :NOT (evaluate tree left))
+            (or (= op :LSHIFT) (= op :RSHIFT))
+              (compute op (evaluate tree (left 0)) (left 1))
+            (or (= op :AND) (= op :OR))
+              (compute op
+                       (evaluate tree (left 0))
+                       (evaluate tree (left 1)))))))))
 
 
 ;; testcases
@@ -92,10 +97,14 @@
   (assert (= (evaluate tree node) value)))
 
 ;; part 1
-(def rules (str/split (slurp (io/resource "day7-input.txt")) #"\n"))
-(def part1-tree (build-tree rules))
+(def input (-> (slurp (io/resource "day7-input.txt"))
+               (str/split #"\n")))
 
-(part1-tree "a")
+(def part1-tree (build-tree input))
 
+(evaluate part1-tree "a")
 
+;; part 2
+(def part2-tree (assoc part1-tree "b" {:op :SET, :left 16076, :right "b"}))
+(evaluate part2-tree "a")
 
